@@ -1,0 +1,1495 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ТурАгент</title>
+</head>
+<body>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+  :root{
+    --bg:#f6f3ec;
+    --surface:#ffffff;
+    --surface2:#efe9db;
+    --text:#211d16;
+    --text-dim:#6b6358;
+    --border:#ddd4c2;
+    --accent:#0f6b63;
+    --accent-ink:#ffffff;
+    --accent2:#c6562f;
+    --good:#16794f;
+    --good-bg:#e4f3ea;
+    --warn:#9a6a08;
+    --warn-bg:#faf0d9;
+    --bad:#b23b2e;
+    --bad-bg:#fbe8e4;
+    --chip-bg:#efe9db;
+    --shadow: 0 1px 2px rgba(33,29,22,.06), 0 6px 20px rgba(33,29,22,.06);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#17191a;
+      --surface:#1f2224;
+      --surface2:#262a2c;
+      --text:#eee8dc;
+      --text-dim:#a39d8f;
+      --border:#34383a;
+      --accent:#43b3a4;
+      --accent-ink:#0c1312;
+      --accent2:#e07a52;
+      --good:#5fcf98;
+      --good-bg:#17322a;
+      --warn:#e3b24a;
+      --warn-bg:#352c13;
+      --bad:#ec7366;
+      --bad-bg:#3a1f1c;
+      --chip-bg:#262a2c;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#17191a;
+    --surface:#1f2224;
+    --surface2:#262a2c;
+    --text:#eee8dc;
+    --text-dim:#a39d8f;
+    --border:#34383a;
+    --accent:#43b3a4;
+    --accent-ink:#0c1312;
+    --accent2:#e07a52;
+    --good:#5fcf98;
+    --good-bg:#17322a;
+    --warn:#e3b24a;
+    --warn-bg:#352c13;
+    --bad:#ec7366;
+    --bad-bg:#3a1f1c;
+    --chip-bg:#262a2c;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.35);
+    color-scheme: dark;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:'IBM Plex Sans', system-ui, sans-serif;
+    padding-inline:0;
+  }
+  h1,h2,h3,.disp{font-family:'Fraunces', Georgia, serif; text-wrap:balance;}
+  a{color:var(--accent);}
+  button{font-family:inherit; cursor:pointer;}
+  ::selection{background:var(--accent); color:var(--accent-ink);}
+
+  .app{max-width:1180px; margin:0 auto; padding:0 16px 48px;}
+
+  /* Topbar */
+  .topbar{
+    position:sticky; top:env(safe-area-inset-top,0px); z-index:40;
+    background:var(--bg); border-bottom:1px solid var(--border);
+    padding-top:env(safe-area-inset-top,0px);
+  }
+  .topbar-inner{max-width:1180px; margin:0 auto; padding:14px 16px 10px; display:flex; flex-direction:column; gap:10px;}
+  .brand{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;}
+  .brand .disp{font-size:22px; font-weight:700; margin:0;}
+  .brand .tag{font-size:12.5px; color:var(--text-dim);}
+  .themebtn{margin-left:auto; border:1px solid var(--border); background:var(--surface); border-radius:20px; padding:6px 12px; font-size:12.5px; color:var(--text);}
+
+  .hotelbar{display:flex; gap:8px; align-items:center; overflow-x:auto; padding-bottom:4px;}
+  .hotelchip{
+    display:flex; align-items:center; gap:6px; white-space:nowrap;
+    border:1px solid var(--border); background:var(--surface); border-radius:20px;
+    padding:6px 12px; font-size:13px; color:var(--text);
+  }
+  .hotelchip.active{border-color:var(--accent); background:var(--accent); color:var(--accent-ink);}
+  .hotelchip .dot{width:8px; height:8px; border-radius:50%; flex:none;}
+  .hotelchip .x{opacity:.6; margin-left:2px;}
+  .addhotel{border:1px dashed var(--border); background:transparent; border-radius:20px; padding:6px 12px; font-size:13px; color:var(--text-dim); flex:none;}
+
+  .tabs{display:flex; gap:4px; overflow-x:auto; padding-bottom:2px;}
+  .tabbtn{
+    border:none; background:transparent; color:var(--text-dim); font-size:13px; font-weight:500;
+    padding:9px 12px; border-radius:8px 8px 0 0; white-space:nowrap; border-bottom:2px solid transparent;
+  }
+  .tabbtn.active{color:var(--accent); border-bottom-color:var(--accent); background:var(--surface);}
+  .tabbtn .n{display:inline-block; width:18px; height:18px; border-radius:50%; background:var(--chip-bg); color:var(--text-dim); font-size:10.5px; line-height:18px; text-align:center; margin-right:6px;}
+  .tabbtn.active .n{background:var(--accent); color:var(--accent-ink);}
+
+  /* progress bar */
+  .progwrap{position:fixed; left:0; right:0; bottom:0; z-index:50; background:var(--surface); border-top:1px solid var(--border); padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px)); display:none;}
+  .progwrap.show{display:block;}
+  .proginner{max-width:1180px; margin:0 auto; display:flex; align-items:center; gap:12px;}
+  .progtext{font-size:13px; color:var(--text-dim); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .progbar{height:4px; background:var(--chip-bg); border-radius:3px; overflow:hidden; position:relative; max-width:1180px; margin:0 auto;}
+  .progfill{height:100%; background:var(--accent); width:30%; animation:slide 1.4s ease-in-out infinite;}
+  @keyframes slide{0%{transform:translateX(-60%)}100%{transform:translateX(220%)}}
+  .stopbtn{border:1px solid var(--bad); color:var(--bad); background:transparent; border-radius:8px; padding:6px 12px; font-size:12.5px; flex:none;}
+  .errbar{background:var(--bad-bg); color:var(--bad); border-top:1px solid var(--bad); padding:8px 16px; font-size:12.5px; display:none;}
+  .errbar.show{display:flex; gap:10px; align-items:center;}
+  .errbar button{background:none; border:1px solid var(--bad); color:var(--bad); border-radius:6px; padding:3px 9px; font-size:11.5px; margin-left:auto;}
+
+  /* panel */
+  .panel{padding-top:20px;}
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:var(--shadow);}
+  .card + .card{margin-top:14px;}
+  .row{display:flex; gap:12px; flex-wrap:wrap;}
+  .col{flex:1; min-width:220px;}
+  label{font-size:12px; color:var(--text-dim); display:block; margin-bottom:5px; font-weight:500;}
+  input[type=text], input[type=number], select, textarea{
+    width:100%; background:var(--bg); border:1px solid var(--border); border-radius:8px;
+    padding:9px 11px; font-size:13.5px; color:var(--text); font-family:inherit;
+  }
+  textarea{resize:vertical; min-height:90px; font-family:'IBM Plex Sans',monospace;}
+  .field{margin-bottom:12px;}
+  .btn{
+    border:1px solid var(--accent); background:var(--accent); color:var(--accent-ink);
+    border-radius:9px; padding:10px 16px; font-size:13.5px; font-weight:600;
+  }
+  .btn.ghost{background:transparent; color:var(--accent);}
+  .btn.soft{background:var(--surface2); border-color:var(--border); color:var(--text);}
+  .btn.sm{padding:6px 11px; font-size:12.5px;}
+  .btn:disabled{opacity:.5; cursor:not-allowed;}
+  .btnrow{display:flex; gap:10px; flex-wrap:wrap; margin-top:4px;}
+  .muted{color:var(--text-dim); font-size:12.5px;}
+  .chipsel{display:flex; gap:7px; flex-wrap:wrap;}
+  .chipsel .c{
+    border:1px solid var(--border); background:var(--chip-bg); border-radius:16px; padding:6px 12px;
+    font-size:12.5px; color:var(--text);
+  }
+  .chipsel .c.sel{background:var(--accent); border-color:var(--accent); color:var(--accent-ink);}
+  .grpTitle{font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-dim); margin:14px 0 7px;}
+  .platcard{border:1px solid var(--border); border-radius:10px; padding:12px; margin-top:10px; background:var(--bg);}
+  .platcard .ph{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;}
+  .plname{font-weight:600; font-size:13.5px;}
+  .pstatus{font-size:11px; padding:2px 8px; border-radius:10px; background:var(--chip-bg); color:var(--text-dim);}
+  .pstatus.ok{background:var(--good-bg); color:var(--good);}
+  .plink{font-size:12px;}
+  .counter{font-size:11px; color:var(--text-dim);}
+
+  .verdict{display:inline-flex; align-items:center; gap:7px; font-weight:700; font-size:14px; padding:7px 13px; border-radius:20px;}
+  .verdict.good{background:var(--good-bg); color:var(--good);}
+  .verdict.warn{background:var(--warn-bg); color:var(--warn);}
+  .verdict.bad{background:var(--bad-bg); color:var(--bad);}
+  .light{width:10px; height:10px; border-radius:50%; flex:none;}
+  .light.good{background:var(--good);} .light.warn{background:var(--warn);} .light.bad{background:var(--bad);}
+
+  table{width:100%; border-collapse:collapse; font-size:12.8px;}
+  th,td{text-align:left; padding:7px 8px; border-bottom:1px solid var(--border); vertical-align:top;}
+  th{color:var(--text-dim); font-weight:600; font-size:11.5px; text-transform:uppercase; letter-spacing:.03em;}
+  .tblwrap{overflow-x:auto;}
+
+  .reviewcard{border:1px solid var(--border); border-radius:10px; padding:12px; margin-top:9px; background:var(--bg);}
+  .rc-top{display:flex; justify-content:space-between; gap:10px; align-items:flex-start;}
+  .rc-meta{font-size:11.5px; color:var(--text-dim);}
+  .badge{font-size:11px; font-weight:700; padding:3px 9px; border-radius:10px; flex:none;}
+  .badge.good{background:var(--good-bg); color:var(--good);}
+  .badge.warn{background:var(--warn-bg); color:var(--warn);}
+  .badge.bad{background:var(--bad-bg); color:var(--bad);}
+  .badge.stale{background:var(--chip-bg); color:var(--text-dim);}
+  .rc-text{font-size:13px; margin:7px 0;}
+  .rc-reasons{font-size:11.5px; color:var(--text-dim);}
+  .rc-reasons .r{display:inline-block; margin-right:8px;}
+  .rc-reasons .r.neg{color:var(--bad);}
+  .rc-reasons .r.pos{color:var(--good);}
+
+  .statgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px;}
+  .stat{background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:11px 13px;}
+  .stat .v{font-family:'Fraunces',serif; font-size:24px; font-weight:700; font-variant-numeric:tabular-nums;}
+  .stat .l{font-size:11px; color:var(--text-dim); margin-top:2px;}
+
+  .claimrow{border-bottom:1px solid var(--border); padding:10px 0; display:flex; gap:10px; align-items:flex-start;}
+  .claimrow:last-child{border-bottom:none;}
+  .claimstatus{font-size:11px; font-weight:700; padding:3px 8px; border-radius:8px; flex:none; white-space:nowrap;}
+  .claimstatus.confirmed{background:var(--good-bg); color:var(--good);}
+  .claimstatus.partial{background:var(--warn-bg); color:var(--warn);}
+  .claimstatus.refuted{background:var(--bad-bg); color:var(--bad);}
+  .claimstatus.unknown{background:var(--chip-bg); color:var(--text-dim);}
+
+  .scriptbox{border:1px solid var(--border); border-radius:10px; padding:12px; margin-top:10px; background:var(--bg);}
+  .scriptbox h4{margin:0 0 7px; font-size:13px;}
+  .scriptbox textarea{min-height:70px;}
+  .cnt{font-size:11px; color:var(--text-dim); margin-top:4px; display:flex; justify-content:space-between;}
+
+  .empty{text-align:center; padding:40px 20px; color:var(--text-dim);}
+  .empty .big{font-size:34px; margin-bottom:8px;}
+
+  .skeleton{height:14px; background:linear-gradient(90deg,var(--chip-bg),var(--border),var(--chip-bg)); border-radius:4px; animation:sk 1.3s infinite;}
+  @keyframes sk{0%{opacity:.5}50%{opacity:1}100%{opacity:.5}}
+
+  @media (max-width:640px){
+    .brand .disp{font-size:19px;}
+    .statgrid{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <h1 class="disp">ТурАгент</h1>
+      <span class="tag">ИИ-помощник менеджера по туризму</span>
+      <button class="themebtn" id="themeBtn" type="button">Тема</button>
+    </div>
+    <div class="hotelbar" id="hotelBar"></div>
+    <div class="tabs" id="tabBar"></div>
+  </div>
+</div>
+
+<div class="app">
+  <div class="panel" id="panel"></div>
+</div>
+
+<div class="errbar" id="errBar"><span id="errMsg"></span><button id="errClose" type="button">Закрыть</button></div>
+<div class="progwrap" id="progWrap">
+  <div class="progbar"><div class="progfill"></div></div>
+  <div class="proginner">
+    <div class="progtext" id="progText">Обработка…</div>
+    <button class="stopbtn" id="stopBtn" type="button">Остановить</button>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------------- platforms catalog ---------------- */
+var PLATFORMS = [
+  {id:"booking", name:"Booking.com", group:"Основные", search:function(h,p){return "https://www.booking.com/searchresults.html?ss="+encodeURIComponent(h+" "+p);}},
+  {id:"tophotels", name:"TopHotels", group:"Основные", search:function(h,p){return "https://www.google.com/search?q="+encodeURIComponent("site:tophotels.ru "+h+" "+p);}},
+  {id:"tripadvisor", name:"TripAdvisor", group:"Основные", search:function(h,p){return "https://www.tripadvisor.com/Search?q="+encodeURIComponent(h+" "+p);}},
+  {id:"official", name:"Официальный сайт отеля", group:"Основные", search:function(h,p){return "https://www.google.com/search?q="+encodeURIComponent(h+" "+p+" official site");}},
+  {id:"expedia", name:"Expedia", group:"Международные", search:function(h,p){return "https://www.expedia.com/Hotel-Search?destination="+encodeURIComponent(h+" "+p);}},
+  {id:"hotelscom", name:"Hotels.com", group:"Международные", search:function(h,p){return "https://www.hotels.com/search.do?q-destination="+encodeURIComponent(h+" "+p);}},
+  {id:"agoda", name:"Agoda", group:"Международные", search:function(h,p){return "https://www.agoda.com/search?text="+encodeURIComponent(h+" "+p);}},
+  {id:"tripcom", name:"Trip.com", group:"Международные", search:function(h,p){return "https://www.google.com/search?q="+encodeURIComponent("site:trip.com "+h+" "+p);}},
+  {id:"gmaps", name:"Google Карты", group:"Международные", search:function(h,p){return "https://www.google.com/maps/search/"+encodeURIComponent(h+" "+p);}},
+  {id:"ostrovok", name:"Островок", group:"СНГ", search:function(h,p){return "https://www.google.com/search?q="+encodeURIComponent("site:ostrovok.ru "+h+" "+p);}},
+  {id:"yatravel", name:"Яндекс Путешествия", group:"СНГ", search:function(h,p){return "https://www.google.com/search?q="+encodeURIComponent("site:travel.yandex.ru "+h+" "+p);}},
+  {id:"2gis", name:"2ГИС", group:"СНГ", search:function(h,p){return "https://2gis.ru/search/"+encodeURIComponent(h+" "+p);}},
+  {id:"yamaps", name:"Яндекс Карты", group:"СНГ", search:function(h,p){return "https://yandex.ru/maps/?text="+encodeURIComponent(h+" "+p);}},
+  {id:"leveltravel", name:"Level.Travel", group:"СНГ", search:function(h,p){return "https://www.google.com/search?q="+encodeURIComponent("site:level.travel "+h+" "+p);}},
+  {id:"otzovik", name:"Отзовик / iRecommend", group:"СНГ", search:function(h,p){return "https://www.google.com/search?q="+encodeURIComponent("site:otzovik.com OR site:irecommend.ru "+h+" "+p);}}
+];
+var PRESETS = {
+  "Основные": ["booking","tophotels","tripadvisor","official"],
+  "Для СНГ и Казахстана": ["booking","tophotels","ostrovok","yatravel","leveltravel","otzovik"],
+  "Международные": ["booking","expedia","hotelscom","agoda","tripcom","gmaps"],
+  "Максимум": PLATFORMS.map(function(p){return p.id;}),
+  "Очистить": []
+};
+
+function platName(pid){
+  var p = PLATFORMS.find(function(x){return x.id===pid;});
+  if(p) return p.name;
+  if(pid==="general") return "Общие знания ИИ";
+  return pid;
+}
+var WISHES = ["Первая линия","Песчаный пляж","Тихо","Анимация","Аквапарк","Детский клуб","SPA","Активный отдых","Короткий трансфер","Бесплатная отмена"];
+var AVOIDS = ["Жара","Долгий перелёт","Виза","Языковой барьер","Толпы","Высокие цены"];
+var INTERESTS = ["Пляж","Горы","Экскурсии","Гастрономия","Ночная жизнь","Шоппинг","Семейный отдых","Спа и релакс","Активный отдых","Культура"];
+
+/* ---------------- state ---------------- */
+var DB = {active:null, hotels:[]};
+var MISC = {script:{tone:"friendly", msgr:"whatsapp", lang:"ru", aud:"any"}, client:{f:{},wants:[],sel:[],res:null}, dest:{f:{},interests:[],avoid:[],res:null}};
+var TAB = 1;
+var cancelFlag = {c:false};
+
+function loadDB(){
+  try{ var raw = localStorage.getItem("tka2_db"); if(raw) DB = JSON.parse(raw); }catch(e){}
+  try{ var raw2 = localStorage.getItem("tka2_misc"); if(raw2) MISC = Object.assign(MISC, JSON.parse(raw2)); }catch(e){}
+}
+function saveDB(){ try{ localStorage.setItem("tka2_db", JSON.stringify(DB)); }catch(e){} }
+function saveMisc(){ try{ localStorage.setItem("tka2_misc", JSON.stringify(MISC)); }catch(e){} }
+
+function activeHotel(){
+  for(var i=0;i<DB.hotels.length;i++) if(DB.hotels[i].id===DB.active) return DB.hotels[i];
+  return null;
+}
+function uid(){ return Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4); }
+
+function newHotel(name, place){
+  return {
+    id:uid(), name:name||"Новый отель", place:place||"", period:6, platforms:[],
+    ext:{}, extLen:{}, reviews:[], rsum:null, ins:null, scr:null
+  };
+}
+
+/* ---------------- theme ---------------- */
+function initTheme(){
+  var t=null;
+  try{ t=localStorage.getItem("tka2_theme"); }catch(e){}
+  if(t) document.documentElement.setAttribute("data-theme", t);
+}
+document.getElementById("themeBtn").addEventListener("click", function(){
+  var cur = document.documentElement.getAttribute("data-theme");
+  var mq = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  var next;
+  if(!cur) next = mq ? "light" : "dark";
+  else if(cur==="dark") next="light";
+  else next=null;
+  if(next) document.documentElement.setAttribute("data-theme", next);
+  else document.documentElement.removeAttribute("data-theme");
+  try{ localStorage.setItem("tka2_theme", next||""); }catch(e){}
+});
+
+/* ---------------- escaping ---------------- */
+function esc(s){
+  if(s===null||s===undefined) return "";
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+function nl2br(s){ return esc(s).replace(/\n/g,"<br>"); }
+
+/* ---------------- progress / errors ---------------- */
+function showProgress(text){
+  document.getElementById("progText").textContent = text;
+  document.getElementById("progWrap").classList.add("show");
+}
+function hideProgress(){ document.getElementById("progWrap").classList.remove("show"); }
+function showError(msg){
+  document.getElementById("errMsg").textContent = msg;
+  document.getElementById("errBar").classList.add("show");
+}
+document.getElementById("errClose").addEventListener("click", function(){
+  document.getElementById("errBar").classList.remove("show");
+});
+document.getElementById("stopBtn").addEventListener("click", function(){ cancelFlag.c = true; });
+
+/* ---------------- sample (AI) wrapper ---------------- */
+var sampleNs = null;
+function getSample(){
+  if(!window.claude || !window.claude.use) return Promise.resolve(null);
+  if(sampleNs) return Promise.resolve(sampleNs);
+  return window.claude.use("sample").then(function(ns){ sampleNs = ns; return ns; }).catch(function(){ return null; });
+}
+function aiJSON(prompt){
+  cancelFlag.c = false;
+  return getSample().then(function(ns){
+    if(!ns) throw {code:"not_granted", message:"ИИ недоступен в этом просмотре."};
+    var ctrl = (typeof AbortController!=="undefined") ? new AbortController() : null;
+    var poll = setInterval(function(){ if(cancelFlag.c && ctrl) ctrl.abort(); }, 200);
+    return ns.json(prompt, {signal: ctrl?ctrl.signal:undefined, modelTier:"default"}).then(function(r){
+      clearInterval(poll); return r;
+    }, function(err){
+      clearInterval(poll); throw err;
+    });
+  });
+}
+
+/* ---------------- heuristics (FR-4.2 local layer) ---------------- */
+var TEMPLATE_RU = ["всем рекомендую","отличный отдых","самый лучший","никогда больше","never again","highly recommend","best hotel ever","must visit","советую всем"];
+function wordSim(a,b){
+  var sa = (a||"").toLowerCase().match(/[a-zа-яё0-9]+/g)||[];
+  var sb = (b||"").toLowerCase().match(/[a-zа-яё0-9]+/g)||[];
+  if(!sa.length||!sb.length) return 0;
+  var setA = {}; sa.forEach(function(w){setA[w]=1;});
+  var inter=0; var setB={};
+  sb.forEach(function(w){ if(!setB[w]){ setB[w]=1; if(setA[w]) inter++; } });
+  var union = Object.keys(setA).length + Object.keys(setB).length - inter;
+  return union? inter/union : 0;
+}
+function heuristicScore(text, allTexts, idx, dateCounts){
+  var flags = [];
+  var score = 50;
+  var words = (text||"").trim().split(/\s+/).filter(Boolean);
+  var wc = words.length;
+  var lower = (text||"").toLowerCase();
+  if(wc < 6){ score -= 20; flags.push({t:"Очень короткий текст",s:-20}); }
+  else if(wc < 12){ score -= 10; flags.push({t:"Мало деталей",s:-10}); }
+  var detailRe = /(этаж|номер|завтрак|бассейн|трансфер|ресепшн|wi-?fi|кондиционер|пляж|минут|км\b|метр|цена|\$|USD|KZT|₸|персонал|уборка|шум|вид из окна)/i;
+  var detailHits = (lower.match(detailRe)||[]).length;
+  if(detailHits>0){ var add=Math.min(20, detailHits*7); score+=add; flags.push({t:"Конкретные детали пребывания",s:add}); }
+  else { score -= 6; flags.push({t:"Нет конкретики",s:-6}); }
+  var hasPlus = /(понравилось|хорошо|отлично|чисто|вкусно|good|nice|great|clean)/i.test(lower);
+  var hasMinus = /(но|однако|минус|плохо|грязно|шумно|but|however|dirty|noisy|bad)/i.test(lower);
+  if(hasPlus && hasMinus){ score+=8; flags.push({t:"Упомянуты и плюсы, и минусы",s:8}); }
+  var emoHits = (lower.match(/(потрясающе|восхитительно|волшебно|сказка|идеально|amazing|perfect|wonderful|incredible)/g)||[]).length;
+  if(emoHits>=3 || (wc<20 && emoHits>=2)){ var pen = wc<20? -8:-12; score+=pen; flags.push({t:"Эмоциональные штампы",s:pen}); }
+  var tmplHit = TEMPLATE_RU.some(function(t){ return lower.indexOf(t)>-1; });
+  if(tmplHit){ score-=9; flags.push({t:"Шаблонные фразы",s:-9}); }
+  var excl = (text.match(/!/g)||[]).length;
+  if(excl>=3){ score-=8; flags.push({t:"3+ восклицательных знака",s:-8}); }
+  var capsWords = (text.match(/\b[A-ZА-ЯЁ]{4,}\b/g)||[]).length;
+  if(capsWords>=2){ score-=8; flags.push({t:"КАПС",s:-8}); }
+  if(/(https?:\/\/|промокод|скидка по коду|звоните|whatsapp\s*:|телефон\s*:?\s*\+?\d)/i.test(lower)){ score-=35; flags.push({t:"Реклама/контакты/ссылки",s:-35}); }
+  var dupPenalty = false;
+  for(var j=0;j<allTexts.length;j++){
+    if(j===idx) continue;
+    if(wordSim(text, allTexts[j]) >= 0.55){ dupPenalty=true; break; }
+  }
+  if(dupPenalty){ score-=25; flags.push({t:"Похож на другой отзыв",s:-25}); }
+  return {score: Math.max(0, Math.min(100, score)), flags: flags};
+}
+function computeHeuristics(reviews){
+  var texts = reviews.map(function(r){return r.text||"";});
+  var dateCounts = {};
+  reviews.forEach(function(r){ dateCounts[r.dateStr] = (dateCounts[r.dateStr]||0)+1; });
+  reviews.forEach(function(r, i){
+    var h = heuristicScore(r.text, texts, i, dateCounts);
+    r.local = h.score;
+    r.flags = h.flags.map(function(f){return f.t + (f.s>=0?" (+"+f.s+")":" ("+f.s+")");});
+    if(dateCounts[r.dateStr] >= 3){ r.local = Math.max(0, r.local-10); r.flags.push("3+ отзыва в одну дату (-10)"); }
+  });
+}
+function finalizeScores(reviews, periodMonths){
+  var cutoff = new Date(); cutoff.setMonth(cutoff.getMonth()-periodMonths);
+  reviews.forEach(function(r){
+    var ai = (typeof r.aiScore==="number") ? r.aiScore : null;
+    r.score = ai!==null ? Math.round(0.7*ai + 0.3*r.local) : r.local;
+    r.verdict = r.score>=65?"real": (r.score>=40?"doubt":"fake");
+    var d = parseDate(r.dateStr);
+    r.stale = d ? (d < cutoff) : false;
+  });
+}
+function parseDate(s){
+  if(!s) return null;
+  var m = /^(\d{4})-(\d{2})(?:-(\d{2}))?$/.exec(s);
+  if(!m) return null;
+  return new Date(parseInt(m[1]), parseInt(m[2])-1, m[3]?parseInt(m[3]):1);
+}
+
+/* ---------------- demo hotel ---------------- */
+function demoHotel(){
+  var h = newHotel("Sunrise Paradise Resort", "Шарм-эль-Шейх, Египет");
+  h.period = 6;
+  h.platforms = ["booking","tophotels","tripadvisor"];
+  h.ext = {
+    booking:{match:true, name:"Sunrise Paradise Resort", stars:5, location:"Набк Бэй, первая линия", site:8.4, scale:10, count:1280,
+      description:"Роскошный курорт на первой линии с собственным пляжем, тремя бассейнами и аквапарком. Бесшумные номера с видом на море, бесплатный Wi-Fi повсюду, трансфер из аэропорта 15 минут.",
+      amenities:["Пляж первая линия","3 бассейна","Аквапарк","Бесплатный Wi-Fi","SPA","Фитнес-центр","Анимация","Детский клуб"],
+      meals:["Всё включено"], price:"от $85/ночь", reviews:[]},
+    tophotels:{match:true, name:"Sunrise Paradise Resort", stars:5, location:"Набк Бэй", site:7.9, scale:10, count:430,
+      description:"Отель 5* с анимацией и аквапарком, пляж песчаный, есть коралловый вход.", amenities:["Пляж","Аквапарк","Анимация","Бассейн"], meals:["Всё включено"], price:null, reviews:[]},
+    tripadvisor:{match:true, name:"Sunrise Paradise Resort", stars:5, location:"Nabq Bay", site:4.0, scale:5, count:860,
+      description:"Beachfront resort with waterpark and multiple pools.", amenities:["Beach","Waterpark","Pools","Wi-Fi"], meals:["All inclusive"], price:null, reviews:[]}
+  };
+  h.extLen = {booking:1200, tophotels:900, tripadvisor:1000};
+  var revs = [
+    {pid:"booking", source:"Booking.com", dateStr:"2026-08-12", rating10:9, traveler:"Семья", text:"Жили 7 ночей на 3 этаже, номер чистый, завтрак в 7:30 уже накрыт, трансфер из аэропорта занял 20 минут. Бассейн у аквапарка шумноват днём, но вечером тихо. Персонал отзывчивый, уборка каждый день."},
+    {pid:"booking", source:"Booking.com", dateStr:"2026-07-30", rating10:2, traveler:"Пара", text:"Wi-Fi почти не работал в номере, только у ресепшн. Пляж далеко от главного корпуса, идти 15 минут. Еда повторяется, но чисто."},
+    {pid:"booking", source:"Booking.com", dateStr:"2026-07-02", rating10:10, traveler:"Семья", text:"Потрясающе!!! Самый лучший отель на свете!!! Всем рекомендую!!!"},
+    {pid:"booking", source:"Booking.com", dateStr:"2026-07-02", rating10:10, traveler:"Пара", text:"Потрясающе!!! Самый лучший отель на свете!!! Всем рекомендую!!!"},
+    {pid:"booking", source:"Booking.com", dateStr:"2026-06-18", rating10:3, traveler:"Компания", text:"Это ужас. Never again. Отель кошмар не едьте сюда. Звоните мне +201234567890 расскажу подробно."},
+    {pid:"tophotels", source:"TopHotels", dateStr:"2026-08-05", rating10:8, traveler:"Семья с детьми", text:"Детский клуб работает с 9 до 18, аниматоры хорошие, но бассейн для малышей маленький. Номер на 2 этаже, вид на сад, кондиционер работал исправно всю неделю."},
+    {pid:"tophotels", source:"TopHotels", dateStr:"2026-05-14", rating10:6, traveler:"Пара", text:"Неплохой отдых, но и минус был: в номере пахло сыростью первые два дня, потом прошло. Персонал на ресепшене приветливый."},
+    {pid:"tripadvisor", source:"TripAdvisor", dateStr:"2026-08-20", rating10:8, traveler:"Couple", text:"Great stay, room on 4th floor was clean, breakfast buffet from 7am, beach chairs were hard to find after 9am though."},
+    {pid:"tripadvisor", source:"TripAdvisor", dateStr:"2025-11-02", rating10:4, traveler:"Solo", text:"Old review, construction noise all week near pool area, front desk apologized but no compensation."}
+  ];
+  revs.forEach(function(r){ r.id = uid(); r.lang = /[а-яё]/i.test(r.text)?"ru":"en"; });
+  h.reviews = revs;
+  computeHeuristics(h.reviews);
+  finalizeScores(h.reviews, h.period);
+  return h;
+}
+
+/* ---------------- render shell ---------------- */
+var TABS = [
+  {n:1, key:"collect", label:"Сбор данных", needsHotel:true},
+  {n:2, key:"dossier", label:"Досье отеля", needsHotel:true},
+  {n:3, key:"reviews", label:"Отзывы", needsHotel:true},
+  {n:4, key:"compare", label:"Описание vs отзывы", needsHotel:true},
+  {n:5, key:"reco", label:"Рекомендация", needsHotel:true},
+  {n:6, key:"scripthotel", label:"Скрипт по отелю", needsHotel:true},
+  {n:7, key:"scriptclient", label:"Скрипт под запрос клиента", needsHotel:false},
+  {n:8, key:"destinations", label:"Куда поехать", needsHotel:false}
+];
+
+function renderHotelBar(){
+  var bar = document.getElementById("hotelBar");
+  var html = "";
+  DB.hotels.forEach(function(h){
+    var dot = "#9a9284";
+    if(h.ins && h.ins.recommendation){
+      var d = h.ins.recommendation.decision;
+      dot = d==="sell"?"var(--good)": d==="caution"?"var(--warn)": d==="avoid"?"var(--bad)":"#9a9284";
+    }
+    html += '<button class="hotelchip'+(h.id===DB.active?" active":"")+'" data-h="'+h.id+'" type="button">'+
+      '<span class="dot" style="background:'+dot+'"></span>'+esc(h.name)+
+      '<span class="x" data-del="'+h.id+'" title="Удалить (двойной клик)">✕</span></button>';
+  });
+  html += '<button class="addhotel" id="addHotelBtn" type="button">+ Добавить отель</button>';
+  bar.innerHTML = html;
+  bar.querySelectorAll(".hotelchip").forEach(function(el){
+    el.addEventListener("click", function(e){
+      if(e.target.dataset.del) return;
+      DB.active = el.dataset.h; saveDB(); renderAll();
+    });
+  });
+  var delClicks = {};
+  bar.querySelectorAll("[data-del]").forEach(function(el){
+    el.addEventListener("click", function(e){
+      e.stopPropagation();
+      var id = el.dataset.del;
+      var now = Date.now();
+      if(delClicks[id] && now-delClicks[id] < 600){
+        DB.hotels = DB.hotels.filter(function(h){return h.id!==id;});
+        if(DB.active===id) DB.active = DB.hotels.length? DB.hotels[0].id : null;
+        saveDB(); renderAll();
+      } else {
+        delClicks[id] = now;
+        showError("Нажмите ещё раз (дважды) на ✕, чтобы удалить отель.");
+      }
+    });
+  });
+  document.getElementById("addHotelBtn").addEventListener("click", function(){
+    var h = newHotel("Новый отель", "");
+    DB.hotels.push(h); DB.active = h.id; saveDB(); renderAll();
+  });
+}
+
+function renderTabs(){
+  var bar = document.getElementById("tabBar");
+  var h = activeHotel();
+  var html = "";
+  TABS.forEach(function(t){
+    var disabled = t.needsHotel && !h;
+    html += '<button class="tabbtn'+(TAB===t.n?" active":"")+'" data-t="'+t.n+'" type="button" '+(disabled?"disabled":"")+' style="'+(disabled?"opacity:.4":"")+'">'+
+      '<span class="n">'+t.n+'</span>'+esc(t.label)+'</button>';
+  });
+  bar.innerHTML = html;
+  bar.querySelectorAll(".tabbtn").forEach(function(el){
+    el.addEventListener("click", function(){ if(el.disabled) return; TAB = parseInt(el.dataset.t); renderPanel(); renderTabs(); });
+  });
+}
+
+function renderAll(){ renderHotelBar(); renderTabs(); renderPanel(); }
+
+/* ---------------- panel router ---------------- */
+function renderPanel(){
+  var panel = document.getElementById("panel");
+  var h = activeHotel();
+  if(!h && TABS.find(function(t){return t.n===TAB;}).needsHotel){
+    panel.innerHTML = '<div class="empty"><div class="big">🧭</div><div>Выберите или добавьте отель, чтобы продолжить.</div></div>';
+    return;
+  }
+  switch(TAB){
+    case 1: renderCollect(panel,h); break;
+    case 2: renderDossier(panel,h); break;
+    case 3: renderReviews(panel,h); break;
+    case 4: renderCompare(panel,h); break;
+    case 5: renderReco(panel,h); break;
+    case 6: renderScriptHotel(panel,h); break;
+    case 7: renderScriptClient(panel); break;
+    case 8: renderDestinations(panel); break;
+  }
+}
+
+/* ============ TAB 1: Сбор данных ============ */
+function renderCollect(panel,h){
+  var byGroup = {};
+  PLATFORMS.forEach(function(p){ (byGroup[p.group]=byGroup[p.group]||[]).push(p); });
+
+  var html = '<div class="card">'+
+    '<div class="row">'+
+      '<div class="col field"><label>Название отеля</label><input type="text" id="fName" value="'+esc(h.name)+'"></div>'+
+      '<div class="col field"><label>Место (город, курорт, страна)</label><input type="text" id="fPlace" value="'+esc(h.place)+'"></div>'+
+      '<div class="col field" style="max-width:180px;"><label>Свежесть отзывов</label><select id="fPeriod">'+
+        [1,3,6,12].map(function(m){return '<option value="'+m+'" '+(h.period===m?"selected":"")+'>'+m+' мес.</option>';}).join("")+
+      '</select></div>'+
+    '</div>'+
+    '<p class="muted">Автосбор недоступен в браузере: откройте страницу отеля по ссылке, скопируйте текст (Ctrl+A → Ctrl+C) и вставьте в поле платформы — ограничение безопасности браузера, у ИИ внутри страницы нет доступа к интернету. Кнопка «Запустить весь анализ» работает и без вставленного текста — тогда ИИ распознаёт отель по названию (для сети отелей предложит выбрать нужный объект) и даст предварительную справку по общим знаниям с пометкой «не проверено»; для точного вердикта всё же вставьте текст страниц.</p>'+
+  '</div>';
+
+  html += '<div class="card"><div class="grpTitle">Пресеты платформ</div><div class="chipsel">'+
+    Object.keys(PRESETS).map(function(name){ return '<button class="c" data-preset="'+esc(name)+'" type="button">'+esc(name)+'</button>'; }).join("")+
+  '</div></div>';
+
+  Object.keys(byGroup).forEach(function(g){
+    html += '<div class="grpTitle">'+esc(g)+'</div><div class="chipsel" style="margin-bottom:4px;">'+
+      byGroup[g].map(function(p){
+        var sel = h.platforms.indexOf(p.id)>-1;
+        return '<button class="c'+(sel?" sel":"")+'" data-plat="'+p.id+'" type="button">'+esc(p.name)+'</button>';
+      }).join("")+
+    '</div>';
+  });
+
+  html += '<div id="platFields"></div>';
+
+  html += '<div class="card"><div class="btnrow">'+
+    '<button class="btn" id="runAllBtn" type="button">Запустить весь анализ</button>'+
+    '<button class="btn soft" id="extractOnlyBtn" type="button">Только извлечь данные</button>'+
+    '<button class="btn ghost" id="demoBtn" type="button">Загрузить демо-отель</button>'+
+  '</div></div>';
+
+  panel.innerHTML = html;
+
+  function renderPlatFields(){
+    var cont = document.getElementById("platFields");
+    var out = "";
+    h.platforms.forEach(function(pid){
+      var p = PLATFORMS.find(function(x){return x.id===pid;});
+      if(!p) return;
+      var ext = h.ext[pid];
+      var url = p.search(h.name||"отель", h.place||"");
+      out += '<div class="platcard">'+
+        '<div class="ph"><span class="plname">'+esc(p.name)+'</span>'+
+        '<span class="pstatus'+(ext?" ok":"")+'">'+(ext?"извлечено":"не извлечено")+'</span></div>'+
+        '<div style="margin:6px 0;"><a class="plink" href="'+url+'" target="_blank" rel="noopener">Открыть поиск →</a>'+
+        ' <span class="muted"> · скопируйте текст страницы (Ctrl+A, Ctrl+C) и вставьте ниже</span></div>'+
+        '<textarea data-paste="'+pid+'" placeholder="Вставьте текст страницы...">'+esc(h.extLen[pid]?(h._rawCache&&h._rawCache[pid]||""):"")+'</textarea>'+
+        '<div class="counter" data-count="'+pid+'">0 символов</div>'+
+      '</div>';
+    });
+    cont.innerHTML = out || '<p class="muted">Выберите хотя бы одну платформу выше.</p>';
+    cont.querySelectorAll("textarea[data-paste]").forEach(function(ta){
+      var pid = ta.dataset.paste;
+      h._rawCache = h._rawCache || {};
+      if(h._rawCache[pid]) ta.value = h._rawCache[pid];
+      var counter = cont.querySelector('[data-count="'+pid+'"]');
+      function upd(){ counter.textContent = ta.value.length + " символов (макс 45000)"; h._rawCache[pid]=ta.value; }
+      ta.addEventListener("input", upd); upd();
+    });
+  }
+  renderPlatFields();
+
+  document.getElementById("fName").addEventListener("change", function(){ h.name=this.value; saveDB(); renderHotelBar(); renderPlatFields(); });
+  document.getElementById("fPlace").addEventListener("change", function(){ h.place=this.value; saveDB(); renderPlatFields(); });
+  document.getElementById("fPeriod").addEventListener("change", function(){ h.period=parseInt(this.value); saveDB(); });
+
+  panel.querySelectorAll("[data-preset]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      h.platforms = PRESETS[btn.dataset.preset].slice();
+      saveDB(); renderCollect(panel,h);
+    });
+  });
+  panel.querySelectorAll("[data-plat]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var pid = btn.dataset.plat;
+      var i = h.platforms.indexOf(pid);
+      if(i>-1) h.platforms.splice(i,1); else h.platforms.push(pid);
+      saveDB(); renderCollect(panel,h);
+    });
+  });
+
+  document.getElementById("demoBtn").addEventListener("click", function(){
+    var dh = demoHotel();
+    DB.hotels.push(dh); DB.active = dh.id; saveDB(); renderAll();
+  });
+
+  document.getElementById("extractOnlyBtn").addEventListener("click", function(){ runPipeline(h, {extractOnly:true}); });
+  document.getElementById("runAllBtn").addEventListener("click", function(){ runPipeline(h, {extractOnly:false}); });
+}
+
+/* ---------------- AI pipeline ---------------- */
+function extractPrompt(hotelName, place, platformName, rawText){
+  return "Ты извлекаешь структурированные данные о гостинице со страницы сайта "+platformName+". "+
+  "Отель менеджера: \""+hotelName+"\", место: \""+place+"\". "+
+  "ПРАВИЛО: используй только то, что явно есть в тексте ниже. Не добавляй знания из своей памяти. Если данных нет — верни null или пустой массив. "+
+  "Верни JSON: {\"match\": bool (страница про этот же отель), \"name\": string|null, \"stars\": number|null, \"location\": string|null, "+
+  "\"site_rating\": number|null, \"site_scale\": number|null (например 5 или 10), \"review_count\": number|null, "+
+  "\"description\": string|null (до 1500 символов), \"amenities\": string[] (до 30), \"meals\": string[], \"price_hint\": string|null, "+
+  "\"reviews\": [{\"date\": \"YYYY-MM-DD или YYYY-MM\"|null, \"rating10\": number (нормализуй к шкале 10)|null, \"traveler\": string|null, \"lang\": string|null, \"text\": string (до 700 символов)}] (до 25 самых свежих)}. "+
+  "ТЕКСТ СТРАНИЦЫ:\n"+rawText.slice(0,45000);
+}
+function reviewTrustPrompt(hotelName, reviews){
+  var compact = reviews.map(function(r,i){ return {i:i, src:r.source, date:r.dateStr, rating:r.rating10, local:r.local, text:r.text}; });
+  return "Оцени достоверность отзывов об отеле \""+hotelName+"\". Для каждого отзыва определи вероятность, что он написан реальным гостем (не накрутка — ни заказная похвала, ни чёрный пиар конкурентов). "+
+  "Учитывай локальную эвристическую оценку (local, 0-100) как подсказку, но суди самостоятельно по содержанию. "+
+  "Верни JSON: {\"items\": [{\"i\": number, \"aiScore\": number 0-100, \"reasons\": string[] (кратко, по-русски), \"sentiment\": \"positive\"|\"negative\"|\"mixed\"}], "+
+  "\"strengths\": string[], \"weaknesses\": string[], \"fake_pattern\": string (кратко опиши характер накрутки если есть, иначе \"не обнаружен\"), \"trend\": string (динамика во времени кратко), \"confidence\": \"low\"|\"medium\"|\"high\"}. "+
+  "ОТЗЫВЫ (json): "+JSON.stringify(compact);
+}
+function comparePrompt(hotelName, extByPlatform, realReviews){
+  return "Сравни заявления отеля \""+hotelName+"\" (описания с разных платформ) с реальным опытом гостей (только проверенные отзывы, без накрутки). "+
+  "Сформулируй 8-14 конкретных заявлений отеля (пляж, Wi-Fi, шум, питание, расстояния, чистота, персонал и т.п.) и для каждого определи статус. "+
+  "Верни JSON: {\"claims\": [{\"claim\": string, \"status\": \"confirmed\"|\"partial\"|\"refuted\"|\"unknown\", \"importance\": \"high\"|\"medium\"|\"low\", \"explanation\": string}], "+
+  "\"honesty_score\": number 0-100, \"summary\": string, \"omissions\": [{\"text\": string, \"importance\": \"high\"|\"medium\"|\"low\"}]}. "+
+  "ОПИСАНИЯ ОТЕЛЯ (json): "+JSON.stringify(extByPlatform)+" РЕАЛЬНЫЕ ОТЗЫВЫ (json): "+JSON.stringify(realReviews.map(function(r){return {source:r.source,date:r.dateStr,rating:r.rating10,text:r.text};}));
+}
+function recoPrompt(hotelName, honestRating, realCount, doubtShare, compareSummary, strengths, weaknesses){
+  return "На основе данных об отеле \""+hotelName+"\" прими решение о продаже. Честный рейтинг (по проверенным отзывам, шкала 10): "+honestRating+". "+
+  "Число реальных отзывов: "+realCount+". Доля сомнительных среди всех: "+Math.round(doubtShare*100)+"%. "+
+  "Честность описания/сводка сравнения: "+compareSummary+". Сильные стороны: "+JSON.stringify(strengths)+". Слабые стороны: "+JSON.stringify(weaknesses)+". "+
+  "Критерии: \"воздержаться\" — только при серьёзных проблемах (гигиена, безопасность, систематический обман, сильный шум). \"С оговорками\" — когда проблемы решаются честным предупреждением клиенту. \"Продавать\" — при стабильно хороших реальных отзывах и честном описании. Мало реальных отзывов снижает уверенность. "+
+  "Верни JSON: {\"decision\": \"sell\"|\"caution\"|\"avoid\"|\"insufficient\", \"confidence\": \"low\"|\"medium\"|\"high\", \"headline\": string, "+
+  "\"why_sell\": string[], \"why_avoid\": string[], \"good_for\": string[], \"not_for\": string[], \"warn_client\": string[], \"ask_hotel\": string[], "+
+  "\"complaint_risk\": \"low\"|\"medium\"|\"high\", \"price_quality_comment\": string}.";
+}
+function scriptHotelPrompt(hotel, opts){
+  var weak = (hotel.rsum&&hotel.rsum.weaknesses)||[];
+  var strong = (hotel.rsum&&hotel.rsum.strengths)||[];
+  return "Напиши продающие тексты для клиента об отеле \""+hotel.name+"\" ("+hotel.place+"). Тон: "+opts.tone+". Мессенджер: "+opts.msgr+". Язык: "+opts.lang+". Тип клиента: "+opts.aud+". "+
+  "Проверенные сильные стороны: "+JSON.stringify(strong)+". Слабые места (упоминать честно и мягко): "+JSON.stringify(weak)+". "+
+  "ПРАВИЛА: используй только переданные факты, не выдумывай удобства/цены/условия, не пиши \"гарантируем\" или \"лучший в мире\", цену и даты оставляй как [цена] и [даты]. "+
+  "Верни JSON: {\"short\": string (до 450 знаков), \"detailed\": string, \"honest\": string (с оговорками о слабых местах), \"followup\": string (напоминание через 1-2 дня), "+
+  "\"objections\": [{\"objection\": string, \"response\": string}] (4-5 штук, привязаны к слабым местам)}.";
+}
+function scriptClientPrompt(input, hotels){
+  return "Запрос клиента туристического агентства: \""+input.query+"\". Кто едет: "+input.who+". Даты/сезон: "+input.dates+". Бюджет: "+input.budget+". Город вылета: "+input.city+". Питание: "+input.meal+". Пожелания: "+JSON.stringify(input.wants)+". "+
+  "Тон: "+input.tone+", мессенджер: "+input.msgr+", язык: "+input.lang+". "+
+  "База отелей менеджера (проверенные данные): "+JSON.stringify(hotels)+". Другие отели упомянутые клиентом (не проверено): \""+(input.other||"")+"\". "+
+  "Если в базе нет подходящего отеля — скажи об этом прямо и посоветуй какой добавить. Отели вне базы описывай по общим знаниям с пометкой «не проверено». "+
+  "Верни JSON: {\"understanding\": string, \"matches\": [{\"hotel\": string, \"fit\": number 0-100, \"reason\": string, \"risk\": string, \"verified\": bool}], \"best\": string, "+
+  "\"message\": string, \"short_message\": string, \"followup\": string, \"objections\": [{\"objection\":string,\"response\":string}], \"clarify_questions\": string[], \"upsell_ideas\": string[], \"honest_notes\": string[]}.";
+}
+function destinationsPrompt(input){
+  return "Турист: кто едет "+input.who+", когда "+input.when+", ночей "+input.nights+", бюджет "+input.budget+", город вылета "+input.city+". Интересы: "+JSON.stringify(input.interests)+". Чего избегать: "+JSON.stringify(input.avoid)+". Заметки: \""+(input.notes||"")+"\". "+
+  "Подбери 3-5 направлений отдыха под профиль, отсортируй по комфорту. Не выдумывай конкретные отели и точные цены; визы/рейсы/погоду помечай как требующие проверки. Если запрос противоречив — укажи на это в summary. "+
+  "Верни JSON: {\"summary\": string, \"contradiction\": string|null, \"destinations\": [{\"name\": string, \"comfort\": number 0-100, \"reason\": string, \"season_fit\": string, \"flight_time\": string, \"entry_notes\": string, \"budget_level\": string, \"areas\": string, \"hotel_type\": string, \"cons\": string[], \"check_before_sale\": string[]}], \"avoid_recommending\": string[], \"ask_client\": string[], \"client_message\": string}.";
+}
+
+function identifyPrompt(name, place){
+  return "Пользователь — менеджер турагентства, он ввёл запрос отеля: название \""+name+"\", место: \""+(place||"не указано")+"\". "+
+  "Определи, идёт ли речь об одном конкретном отеле или запрос неоднозначен (сеть отелей с несколькими объектами, название встречается в разных городах/странах). "+
+  "Если отель один и название достаточно уникально — верни ровно один вариант. Если это сеть или есть несколько разных объектов с похожим названием — верни несколько вариантов (до 6), каждый с реальным городом/курортом/страной. "+
+  "Используй только свои общие знания, не выдумывай несуществующие отели. Если вообще не уверен, что отель существует, верни candidates: [] и объясни это в note. "+
+  "Верни JSON: {\"candidates\": [{\"name\": string, \"place\": string, \"note\": string (1 фраза: чем отличается/где находится)}], \"is_chain\": bool}.";
+}
+function generalBriefPrompt(name, place){
+  return "Дай краткое ОБЩЕЕ представление об отеле \""+name+"\" ("+(place||"место не указано")+") по своим общим знаниям — это не проверенные данные, а ориентировочная справка, пока менеджер не вставил текст страниц агрегаторов. "+
+  "Не выдумывай точные цифры рейтинга, количество отзывов или цены. "+
+  "Верни JSON: {\"stars\": number|null, \"location\": string|null (ориентировочно), \"meals\": string[], \"amenities\": string[] (известные по общей репутации), "+
+  "\"description\": string (3-5 предложений), \"caveat\": string (короткое предупреждение, что это не проверенные данные и нужен реальный сбор отзывов)}.";
+}
+
+function runPipeline(h, opts){
+  cancelFlag.c = false;
+  if(!h.name || !h.name.trim()){
+    showError("Укажите название отеля, чтобы запустить анализ.");
+    return;
+  }
+  if(opts.extractOnly){
+    continuePipeline(h, opts);
+    return;
+  }
+  showProgress("Распознаём отель…");
+  aiJSON(identifyPrompt(h.name, h.place)).then(function(idRes){
+    var cands = (idRes && idRes.candidates) || [];
+    if(cands.length > 1){
+      hideProgress();
+      showHotelChooser(h, cands, opts, idRes.is_chain);
+      return;
+    }
+    if(cands.length === 1){
+      h.name = cands[0].name || h.name;
+      h.place = cands[0].place || h.place;
+      saveDB(); renderHotelBar();
+    }
+    continuePipeline(h, opts);
+  }).catch(function(){
+    // ИИ-распознавание недоступно — продолжаем с тем, что указал менеджер
+    continuePipeline(h, opts);
+  });
+}
+
+function showHotelChooser(h, cands, opts, isChain){
+  var panel = document.getElementById("panel");
+  var html = '<div class="card"><div class="grpTitle">'+(isChain?"Это сеть отелей":"Название неоднозначно")+' — выберите нужный объект</div>'+
+    cands.map(function(c,i){
+      return '<div class="claimrow"><button class="btn soft sm" data-pick="'+i+'" type="button">Выбрать</button>'+
+        '<div><strong>'+esc(c.name)+'</strong><span class="muted"> — '+esc(c.place||"")+'</span>'+
+        (c.note?'<div class="muted" style="margin-top:3px;">'+esc(c.note)+'</div>':'')+'</div></div>';
+    }).join("")+
+    '<div class="btnrow" style="margin-top:10px;"><button class="btn ghost sm" id="chooserCancel" type="button">Отмена</button></div>'+
+  '</div>';
+  panel.innerHTML = html;
+  panel.querySelectorAll("[data-pick]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var c = cands[parseInt(btn.dataset.pick)];
+      h.name = c.name || h.name; h.place = c.place || h.place;
+      saveDB(); renderHotelBar();
+      continuePipeline(h, opts);
+    });
+  });
+  document.getElementById("chooserCancel").addEventListener("click", function(){ renderCollect(panel,h); });
+}
+
+function continuePipeline(h, opts){
+  var platformsToRun = (h.platforms||[]).filter(function(pid){
+    var raw = (h._rawCache||{})[pid] || "";
+    return raw.trim().length>0;
+  });
+  if(platformsToRun.length===0){
+    if(opts.extractOnly){
+      showError("Вставьте текст страницы хотя бы для одной выбранной платформы, затем нажмите «Только извлечь данные» снова.");
+      return;
+    }
+    runGeneralBrief(h);
+    return;
+  }
+  var changed = platformsToRun.filter(function(pid){
+    var raw = (h._rawCache||{})[pid]||"";
+    return h.extLen[pid] !== raw.length;
+  });
+  if(changed.length===0 && Object.keys(h.ext).length>0){
+    // FR-1.7: nothing changed since last extraction — re-run downstream steps on existing data
+    if(opts.extractOnly){
+      showError("Текст платформ не изменился с прошлого извлечения — повторная вставка не требуется.");
+      return;
+    }
+    hideProgress();
+    runTrustStep();
+    return;
+  } else if(Object.keys(h.ext).length===0){
+    changed = platformsToRun;
+  }
+  var queue = changed.slice();
+  showProgress("Извлечение данных: подготовка…");
+
+  function stepExtract(){
+    if(cancelFlag.c || queue.length===0) return afterExtract();
+    var pid = queue.shift();
+    var p = PLATFORMS.find(function(x){return x.id===pid;});
+    showProgress("Извлечение: "+p.name+"…");
+    var raw = h._rawCache[pid];
+    return aiJSON(extractPrompt(h.name, h.place, p.name, raw)).then(function(res){
+      h.ext[pid] = {
+        match: res.match!==false, name: res.name||null, stars: res.stars||null, location: res.location||null,
+        site: res.site_rating!=null?res.site_rating:null, scale: res.site_scale||10, count: res.review_count||null,
+        description: res.description||null, amenities: res.amenities||[], meals: res.meals||[], price: res.price_hint||null,
+        reviews: (res.reviews||[]).map(function(r){ return {source:p.name, pid:pid, dateStr:r.date, rating10:r.rating10, traveler:r.traveler, lang:r.lang, text:(r.text||"").slice(0,700)}; })
+      };
+      h.extLen[pid] = raw.length;
+      saveDB();
+      return stepExtract();
+    }).catch(function(err){
+      showError("Ошибка извлечения ("+p.name+"): "+(err&&err.message||err&&err.code||"неизвестная ошибка"));
+      return stepExtract();
+    });
+  }
+
+  function afterExtract(){
+    // merge reviews
+    var all = [];
+    h.platforms.forEach(function(pid){
+      var ext = h.ext[pid];
+      if(ext && ext.reviews) all = all.concat(ext.reviews.map(function(r){ return Object.assign({id:uid()}, r); }));
+    });
+    // dedupe
+    var deduped = [];
+    all.forEach(function(r){
+      var dup = deduped.some(function(x){ return wordSim(x.text,r.text) >= 0.85 && x.dateStr===r.dateStr; });
+      if(!dup) deduped.push(r);
+    });
+    deduped.sort(function(a,b){ return (b.dateStr||"").localeCompare(a.dateStr||""); });
+    h.reviews = deduped.slice(0,40);
+    computeHeuristics(h.reviews);
+    finalizeScores(h.reviews, h.period);
+    saveDB();
+    renderAll();
+    if(opts.extractOnly || cancelFlag.c){ hideProgress(); return; }
+    runTrustStep();
+  }
+
+  function runTrustStep(){
+    showProgress("Проверка отзывов на накрутку…");
+    var revs = h.reviews;
+    if(revs.length===0){ hideProgress(); return; }
+    aiJSON(reviewTrustPrompt(h.name, revs)).then(function(res){
+      (res.items||[]).forEach(function(it){
+        var r = revs[it.i];
+        if(r){ r.aiScore = it.aiScore; r.aiReasons = it.reasons||[]; r.aiSentiment = it.sentiment; }
+      });
+      finalizeScores(revs, h.period);
+      h.rsum = {strengths: res.strengths||[], weaknesses: res.weaknesses||[], trend: res.trend||"", fake_pattern: res.fake_pattern||"", confidence: res.confidence||"medium"};
+      saveDB(); renderAll();
+      if(cancelFlag.c){ hideProgress(); return; }
+      runCompareStep();
+    }).catch(function(err){
+      showError("Ошибка проверки отзывов: "+(err&&err.message||err&&err.code));
+      hideProgress();
+    });
+  }
+
+  function runCompareStep(){
+    showProgress("Сравнение описания и отзывов…");
+    var extCompact = {};
+    Object.keys(h.ext).forEach(function(pid){
+      var e = h.ext[pid];
+      extCompact[pid] = {description:e.description, amenities:e.amenities, meals:e.meals, stars:e.stars, location:e.location};
+    });
+    var realReviews = h.reviews.filter(function(r){ return r.verdict==="real" && !r.stale; });
+    if(realReviews.length===0) realReviews = h.reviews.filter(function(r){return !r.stale;});
+    aiJSON(comparePrompt(h.name, extCompact, realReviews)).then(function(res){
+      h.ins = h.ins||{};
+      h.ins.claims = res.claims||[];
+      h.ins.omissions = res.omissions||[];
+      h.ins.match_score = res.honesty_score!=null?res.honesty_score:null;
+      h.ins.match_summary = res.summary||"";
+      saveDB(); renderAll();
+      if(cancelFlag.c){ hideProgress(); return; }
+      runRecoStep();
+    }).catch(function(err){
+      showError("Ошибка сравнения: "+(err&&err.message||err&&err.code));
+      hideProgress();
+    });
+  }
+
+  function runRecoStep(){
+    showProgress("Формирование рекомендации…");
+    var real = h.reviews.filter(function(r){return r.verdict==="real" && !r.stale;});
+    var fresh = h.reviews.filter(function(r){return !r.stale;});
+    var honest = real.length? (real.reduce(function(s,r){return s+r.rating10;},0)/real.length) : null;
+    var doubtful = fresh.length? fresh.filter(function(r){return r.verdict!=="real";}).length/fresh.length : 0;
+    if(real.length < 3 || honest===null){
+      h.ins.recommendation = {decision:"insufficient", confidence:"low", headline:"Недостаточно проверенных отзывов для уверенного вывода", why_sell:[], why_avoid:[], good_for:[], not_for:[], warn_client:["Мало подтверждённых отзывов — решение предварительное"], ask_hotel:[], complaint_risk:"medium", price_quality_comment:""};
+      saveDB(); renderAll(); hideProgress(); return;
+    }
+    aiJSON(recoPrompt(h.name, honest.toFixed(1), real.length, doubtful, h.ins.match_summary||"", (h.rsum&&h.rsum.strengths)||[], (h.rsum&&h.rsum.weaknesses)||[])).then(function(res){
+      h.ins.recommendation = res;
+      saveDB(); renderAll(); hideProgress();
+    }).catch(function(err){
+      showError("Ошибка рекомендации: "+(err&&err.message||err&&err.code));
+      hideProgress();
+    });
+  }
+
+  stepExtract();
+}
+
+function runGeneralBrief(h){
+  showProgress("Нет вставленного текста страниц — готовим общую справку по знаниям ИИ (не проверено)…");
+  aiJSON(generalBriefPrompt(h.name, h.place)).then(function(res){
+    h.ext["general"] = {
+      match:true, name:h.name, stars:res.stars||null, location:res.location||null, site:null, scale:10, count:null,
+      description:(res.description||"")+(res.caveat?" ⚠ "+res.caveat:""), amenities:res.amenities||[], meals:res.meals||[], price:null, reviews:[], notVerified:true
+    };
+    if(h.platforms.indexOf("general")===-1) h.platforms.push("general");
+    h.rsum = h.rsum || {strengths:[], weaknesses:[], trend:"", fake_pattern:"Нет отзывов для проверки накрутки", confidence:"low"};
+    h.ins = h.ins || {};
+    h.ins.claims = h.ins.claims || [];
+    h.ins.match_score = h.ins.match_score!=null ? h.ins.match_score : null;
+    h.ins.match_summary = "Текст страниц агрегаторов не вставлен — сравнение заявлений отеля с реальным опытом гостей невозможно. Справка ниже основана на общих знаниях ИИ и требует проверки.";
+    h.ins.recommendation = {
+      decision:"insufficient", confidence:"low",
+      headline:"Нет проверенных отзывов — надёжное решение невозможно. Вставьте текст страниц платформ (Booking, TopHotels и др.) для полного анализа.",
+      why_sell:[], why_avoid:[], good_for:[], not_for:[],
+      warn_client:["Данные по отелю не проверены — есть только общая справка по открытым знаниям ИИ"],
+      ask_hotel:["Актуальные отзывы и рейтинг на основных площадках"],
+      complaint_risk:"medium", price_quality_comment:""
+    };
+    saveDB(); hideProgress(); renderAll();
+  }).catch(function(err){
+    showError("ИИ недоступен для общей справки: "+(err&&err.message||err&&err.code||"неизвестная ошибка")+". Вставьте текст страниц платформ, чтобы продолжить вручную.");
+    hideProgress();
+  });
+}
+
+/* ============ TAB 2: Досье отеля ============ */
+function renderDossier(panel,h){
+  var ids = h.platforms.filter(function(pid){return h.ext[pid];});
+  if(ids.length===0){
+    panel.innerHTML = '<div class="empty"><div class="big">📋</div>Пока нет извлечённых данных. Перейдите в «Сбор данных».</div>';
+    return;
+  }
+  var amenCount = {};
+  ids.forEach(function(pid){ (h.ext[pid].amenities||[]).forEach(function(a){ amenCount[a]=(amenCount[a]||0)+1; }); });
+  var amenSorted = Object.keys(amenCount).sort(function(a,b){return amenCount[b]-amenCount[a];});
+
+  var html = '<div class="card"><div class="btnrow"><button class="btn soft sm" id="copyDossier" type="button">Скопировать досье</button></div></div>';
+
+  ids.forEach(function(pid){
+    var e = h.ext[pid];
+    html += '<div class="card">'+
+      '<div class="row" style="justify-content:space-between; align-items:flex-start;">'+
+        '<div><strong>'+esc(platName(pid))+'</strong>'+(e.match===false?' <span class="badge warn">возможно, другой отель</span>':'')+(e.notVerified?' <span class="badge warn">не проверено</span>':'')+'</div>'+
+        '<div class="muted">'+(e.stars?esc(e.stars)+'★ · ':'')+(e.site!=null?'рейтинг '+e.site+'/'+(e.scale||10):'нет рейтинга')+(e.count?' · '+e.count+' отзывов':'')+'</div>'+
+      '</div>'+
+      (e.location?'<p class="muted">📍 '+esc(e.location)+'</p>':'')+
+      (e.meals&&e.meals.length?'<p class="muted">🍽 '+esc(e.meals.join(", "))+'</p>':'')+
+      (e.price?'<p class="muted">💰 '+esc(e.price)+'</p>':'')+
+      (e.description?'<details><summary style="cursor:pointer;font-size:13px;">Описание</summary><p style="font-size:13px;">'+nl2br(e.description)+'</p></details>':'<p class="muted">Описание не найдено</p>')+
+      (e.amenities&&e.amenities.length?'<div class="chipsel" style="margin-top:8px;">'+e.amenities.map(function(a){return '<span class="c">'+esc(a)+'</span>';}).join("")+'</div>':'')+
+    '</div>';
+  });
+
+  if(amenSorted.length){
+    html += '<div class="card"><div class="grpTitle">Сводка удобств по всем платформам</div><div class="chipsel">'+
+      amenSorted.map(function(a){ return '<span class="c'+(amenCount[a]>1?" sel":"")+'">'+esc(a)+(amenCount[a]>1?' ×'+amenCount[a]:'')+'</span>'; }).join("")+
+    '</div></div>';
+  }
+
+  panel.innerHTML = html;
+  document.getElementById("copyDossier").addEventListener("click", function(){
+    var txt = "Досье отеля: "+h.name+" ("+h.place+")\n\n";
+    ids.forEach(function(pid){
+      var e = h.ext[pid];
+      txt += platName(pid)+": "+(e.stars||"?")+"★, рейтинг "+(e.site!=null?e.site+"/"+(e.scale||10):"н/д")+", "+(e.count||0)+" отзывов\n";
+      if(e.location) txt += "Локация: "+e.location+"\n";
+      if(e.description) txt += "Описание: "+e.description+"\n";
+      txt += "\n";
+    });
+    copyToClipboard(txt, this);
+  });
+}
+
+/* ============ TAB 3: Отзывы ============ */
+var reviewFilter = "all";
+function renderReviews(panel,h){
+  var revs = h.reviews||[];
+  if(revs.length===0){
+    panel.innerHTML = '<div class="empty"><div class="big">💬</div>Отзывы не найдены. Запустите анализ в «Сборе данных».</div>';
+    return;
+  }
+  var fresh = revs.filter(function(r){return !r.stale;});
+  var real = fresh.filter(function(r){return r.verdict==="real";});
+  var doubt = fresh.filter(function(r){return r.verdict==="doubt";});
+  var fake = fresh.filter(function(r){return r.verdict==="fake";});
+  var honest = real.length? real.reduce(function(s,r){return s+r.rating10;},0)/real.length : null;
+  var allAvg = fresh.length? fresh.reduce(function(s,r){return s+r.rating10;},0)/fresh.length : null;
+
+  var html = '<div class="card">'+
+    (h.rsum?'<div class="row" style="margin-bottom:10px;"><div class="col"><strong>Сильные стороны:</strong> '+esc((h.rsum.strengths||[]).join(", ")||"—")+'</div>'+
+      '<div class="col"><strong>Слабые стороны:</strong> '+esc((h.rsum.weaknesses||[]).join(", ")||"—")+'</div></div>'+
+      '<p class="muted">Накрутка: '+esc(h.rsum.fake_pattern||"—")+' · Динамика: '+esc(h.rsum.trend||"—")+'</p>':'')+
+    '<div class="statgrid">'+
+      '<div class="stat"><div class="v">'+(honest!=null?honest.toFixed(1):"—")+'</div><div class="l">Честный рейтинг</div></div>'+
+      '<div class="stat"><div class="v">'+(allAvg!=null?allAvg.toFixed(1):"—")+'</div><div class="l">Рейтинг по всем свежим</div></div>'+
+      '<div class="stat"><div class="v">'+real.length+'</div><div class="l">Реальных отзывов</div></div>'+
+      '<div class="stat"><div class="v">'+(fresh.length?Math.round((doubt.length+fake.length)/fresh.length*100):0)+'%</div><div class="l">Накрутка + сомнительные</div></div>'+
+    '</div>'+
+    '<div class="btnrow" style="margin-top:12px;"><button class="btn soft sm" id="recheckBtn" type="button">Перепроверить отзывы</button></div>'+
+  '</div>';
+
+  html += '<div class="card"><div class="tblwrap"><table><thead><tr><th>Платформа</th><th>Рейтинг на сайте</th><th>Честный</th><th>Реальных/проверено</th><th>Метка</th></tr></thead><tbody>';
+  h.platforms.filter(function(pid){return h.ext[pid];}).forEach(function(pid){
+    var e = h.ext[pid];
+    var pr = fresh.filter(function(r){return r.pid===pid;});
+    var prReal = pr.filter(function(r){return r.verdict==="real";});
+    var honestP = prReal.length? prReal.reduce(function(s,r){return s+r.rating10;},0)/prReal.length : null;
+    var siteNorm = e.site!=null ? (e.site/(e.scale||10))*10 : null;
+    var mark = "";
+    if(siteNorm!=null && honestP!=null){
+      if(siteNorm - honestP >= 0.5) mark = '<span class="badge warn">завышен</span>';
+      else if(honestP - siteNorm >= 0.5) mark = '<span class="badge bad">занижен</span>';
+    }
+    html += '<tr><td>'+esc(platName(pid))+'</td><td>'+(e.site!=null?e.site+'/'+(e.scale||10):'—')+'</td>'+
+      '<td>'+(honestP!=null?honestP.toFixed(1):'—')+'</td><td>'+prReal.length+'/'+pr.length+'</td><td>'+mark+'</td></tr>';
+  });
+  html += '</tbody></table></div></div>';
+
+  html += '<div class="card"><div class="chipsel" style="margin-bottom:12px;">'+
+    [["all","Все"],["real","Реальные"],["doubt","Сомнительные"],["fake","Накрутка"],["stale","Устаревшие"]].map(function(f){
+      return '<button class="c'+(reviewFilter===f[0]?" sel":"")+'" data-filter="'+f[0]+'" type="button">'+f[1]+'</button>';
+    }).join("")+
+  '</div><div id="revList"></div></div>';
+
+  panel.innerHTML = html;
+
+  function renderList(){
+    var list = revs.filter(function(r){
+      if(reviewFilter==="stale") return r.stale;
+      if(reviewFilter==="all") return true;
+      return !r.stale && r.verdict===reviewFilter;
+    });
+    var out = list.map(function(r){
+      var badgeClass = r.stale?"stale": r.verdict==="real"?"good": r.verdict==="doubt"?"warn":"bad";
+      var badgeText = r.stale?"устарел": r.verdict==="real"?"реальный": r.verdict==="doubt"?"сомнительный":"накрутка";
+      var reasons = (r.flags||[]).map(function(f){return '<span class="r '+(f.indexOf("-")>-1&&f.indexOf("+")===-1?"neg":"pos")+'">'+esc(f)+'</span>';}).join("");
+      var aiReasons = (r.aiReasons||[]).map(function(f){return '<span class="r">ИИ: '+esc(f)+'</span>';}).join(" ");
+      return '<div class="reviewcard">'+
+        '<div class="rc-top"><div class="rc-meta">'+esc(r.source)+' · '+esc(r.dateStr||"?")+' · '+(r.traveler?esc(r.traveler):"тип не указан")+' · оценка '+r.rating10+'/10</div>'+
+        '<span class="badge '+badgeClass+'">'+badgeText+' ('+r.score+')</span></div>'+
+        '<div class="rc-text">'+nl2br(r.text)+'</div>'+
+        '<div class="rc-reasons">'+reasons+' '+aiReasons+'</div>'+
+      '</div>';
+    }).join("");
+    document.getElementById("revList").innerHTML = out || '<p class="muted">Нет отзывов по этому фильтру.</p>';
+  }
+  renderList();
+  panel.querySelectorAll("[data-filter]").forEach(function(btn){
+    btn.addEventListener("click", function(){ reviewFilter = btn.dataset.filter; renderReviews(panel,h); });
+  });
+  document.getElementById("recheckBtn").addEventListener("click", function(){
+    showProgress("Повторная проверка отзывов…");
+    aiJSON(reviewTrustPrompt(h.name, h.reviews)).then(function(res){
+      (res.items||[]).forEach(function(it){
+        var r = h.reviews[it.i];
+        if(r){ r.aiScore = it.aiScore; r.aiReasons = it.reasons||[]; r.aiSentiment = it.sentiment; }
+      });
+      finalizeScores(h.reviews, h.period);
+      h.rsum = {strengths: res.strengths||[], weaknesses: res.weaknesses||[], trend: res.trend||"", fake_pattern: res.fake_pattern||"", confidence: res.confidence||"medium"};
+      saveDB(); hideProgress(); renderReviews(panel,h);
+    }).catch(function(err){ showError("Ошибка: "+(err&&err.message||err&&err.code)); hideProgress(); });
+  });
+}
+
+/* ============ TAB 4: Описание vs отзывы ============ */
+function renderCompare(panel,h){
+  if(!h.ins || !h.ins.claims){
+    panel.innerHTML = '<div class="empty"><div class="big">🔍</div>Сравнение ещё не выполнено. Запустите «Весь анализ» в «Сборе данных», или добавьте страницу официального сайта для более точного сравнения.</div>';
+    return;
+  }
+  var order = {high:0,medium:1,low:2};
+  var claims = h.ins.claims.slice().sort(function(a,b){ return (order[a.importance]||1)-(order[b.importance]||1); });
+  var html = '<div class="card"><div class="statgrid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));">'+
+    '<div class="stat"><div class="v">'+(h.ins.match_score!=null?h.ins.match_score:"—")+'</div><div class="l">Честность описания</div></div>'+
+  '</div><p style="margin-top:10px;">'+esc(h.ins.match_summary||"")+'</p></div>';
+
+  html += '<div class="card"><div class="grpTitle">Заявления отеля vs реальный опыт гостей</div>';
+  claims.forEach(function(c){
+    var cls = c.status==="confirmed"?"confirmed":c.status==="partial"?"partial":c.status==="refuted"?"refuted":"unknown";
+    var txt = {confirmed:"подтверждается",partial:"частично",refuted:"не подтверждается",unknown:"нет данных"}[cls];
+    html += '<div class="claimrow"><span class="claimstatus '+cls+'">'+txt+'</span><div><div style="font-weight:600;font-size:13.5px;">'+esc(c.claim)+' <span class="muted">('+esc(c.importance)+')</span></div>'+
+      '<div class="muted" style="margin-top:3px;">'+esc(c.explanation||"")+'</div></div></div>';
+  });
+  html += '</div>';
+
+  if(h.ins.omissions && h.ins.omissions.length){
+    html += '<div class="card"><div class="grpTitle">О чём молчит описание</div>'+
+      h.ins.omissions.map(function(o){ return '<div class="claimrow"><span class="badge warn">'+esc(o.importance)+'</span><div>'+esc(o.text)+'</div></div>'; }).join("")+
+    '</div>';
+  }
+  panel.innerHTML = html;
+}
+
+/* ============ TAB 5: Рекомендация ============ */
+function renderReco(panel,h){
+  var rec = h.ins && h.ins.recommendation;
+  if(!rec){
+    panel.innerHTML = '<div class="empty"><div class="big">🚦</div>Рекомендация появится после полного анализа.</div>';
+    return;
+  }
+  var map = {sell:["good","Продавать"], caution:["warn","Продавать с оговорками"], avoid:["bad","Воздержаться от продажи"], insufficient:["warn","Недостаточно данных"]};
+  var m = map[rec.decision]||["warn","—"];
+  var riskMap = {low:"низкий",medium:"средний",high:"высокий"};
+
+  var html = '<div class="card">'+
+    '<div class="verdict '+m[0]+'"><span class="light '+m[0]+'"></span>'+m[1]+'</div>'+
+    '<p style="margin-top:10px;font-size:15px;">'+esc(rec.headline||"")+'</p>'+
+    '<p class="muted">Уверенность: '+esc({low:"низкая",medium:"средняя",high:"высокая"}[rec.confidence]||rec.confidence)+' · Риск жалоб: '+esc(riskMap[rec.complaint_risk]||rec.complaint_risk)+'</p>'+
+  '</div>';
+
+  function block(title, arr, cls){
+    if(!arr||!arr.length) return "";
+    return '<div class="card"><div class="grpTitle">'+esc(title)+'</div><ul style="margin:0;padding-left:18px;font-size:13.5px;">'+
+      arr.map(function(x){return '<li style="margin-bottom:4px;">'+esc(x)+'</li>';}).join("")+'</ul></div>';
+  }
+  html += '<div class="row">'+
+    '<div class="col">'+block("Почему продавать", rec.why_sell)+'</div>'+
+    '<div class="col">'+block("Риски / почему воздержаться", rec.why_avoid)+'</div>'+
+  '</div>';
+  html += '<div class="row">'+
+    '<div class="col">'+block("Кому подходит", rec.good_for)+'</div>'+
+    '<div class="col">'+block("Кому не продавать", rec.not_for)+'</div>'+
+  '</div>';
+  html += block("Что предупредить клиента до оплаты", rec.warn_client);
+  html += block("Что уточнить у отеля/оператора", rec.ask_hotel);
+  if(rec.price_quality_comment) html += '<div class="card"><div class="grpTitle">Цена и качество</div><p style="font-size:13.5px;">'+esc(rec.price_quality_comment)+'</p></div>';
+
+  html += '<div class="card"><div class="btnrow">'+
+    '<button class="btn" id="toScriptsBtn" type="button">Перейти к скриптам</button>'+
+    '<button class="btn soft" id="copyNoteBtn" type="button">Скопировать заметку для коллег</button>'+
+    '<button class="btn ghost" id="downloadMdBtn" type="button">Скачать отчёт .md</button>'+
+  '</div></div>';
+
+  panel.innerHTML = html;
+  document.getElementById("toScriptsBtn").addEventListener("click", function(){ TAB=6; renderTabs(); renderPanel(); });
+  document.getElementById("copyNoteBtn").addEventListener("click", function(){
+    var note = h.name+" — "+m[1]+". "+rec.headline+"\nПредупредить клиента: "+(rec.warn_client||[]).join("; ");
+    copyToClipboard(note, this);
+  });
+  document.getElementById("downloadMdBtn").addEventListener("click", function(){ downloadReport(h); });
+}
+
+function buildMd(h){
+  var rec = h.ins && h.ins.recommendation;
+  var md = "# Отчёт по отелю: "+h.name+"\n\n**Место:** "+h.place+"\n\n";
+  if(rec){
+    md += "## Рекомендация: "+({sell:"Продавать",caution:"Продавать с оговорками",avoid:"Воздержаться",insufficient:"Недостаточно данных"}[rec.decision]||"—")+"\n\n"+rec.headline+"\n\n";
+    md += "**Предупредить клиента:**\n"+(rec.warn_client||[]).map(function(x){return "- "+x;}).join("\n")+"\n\n";
+  }
+  if(h.rsum){
+    md += "## Отзывы\nСильные стороны: "+(h.rsum.strengths||[]).join(", ")+"\nСлабые стороны: "+(h.rsum.weaknesses||[]).join(", ")+"\n\n";
+  }
+  if(h.ins && h.ins.claims){
+    md += "## Описание vs отзывы (честность "+(h.ins.match_score||"?")+"/100)\n";
+    h.ins.claims.forEach(function(c){ md += "- ["+c.status+"] "+c.claim+" — "+(c.explanation||"")+"\n"; });
+  }
+  return md;
+}
+function downloadReport(h){
+  var md = buildMd(h);
+  if(!window.claude || !window.claude.use){ showError("Экспорт доступен только в опубликованном артефакте."); return; }
+  window.claude.use("downloads").then(function(ns){
+    if(!ns){ showError("Загрузка файлов недоступна в этом просмотре."); return; }
+    return ns.save({filename: (h.name||"hotel").replace(/[^a-zA-Zа-яА-Я0-9 _-]/g,"")+".md", data: md});
+  }).catch(function(e){ showError("Не удалось сохранить файл: "+(e&&e.message||e)); });
+}
+
+function copyToClipboard(text, btn){
+  var done = function(ok){
+    if(!btn) return;
+    var old = btn.textContent;
+    btn.textContent = ok?"Скопировано ✓":"Не удалось";
+    setTimeout(function(){ btn.textContent = old; }, 1500);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){done(true);}, function(){ fallbackCopy(text,done); });
+  } else fallbackCopy(text,done);
+}
+function fallbackCopy(text, done){
+  try{
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.style.position="fixed"; ta.style.opacity="0";
+    document.body.appendChild(ta); ta.select();
+    document.execCommand("copy"); document.body.removeChild(ta);
+    done(true);
+  }catch(e){ done(false); }
+}
+
+/* ============ TAB 6: Скрипт по отелю ============ */
+function renderScriptHotel(panel,h){
+  var opts = h.scr && h.scr.opts || Object.assign({}, MISC.script);
+  var html = '<div class="card"><div class="row">'+
+    selectField("tone","Тон", opts.tone, [["friendly","Дружелюбный"],["business","Деловой"],["premium","Премиум"],["concise","Лаконичный"]])+
+    selectField("msgr","Мессенджер", opts.msgr, [["whatsapp","WhatsApp"],["telegram","Telegram"],["instagram","Instagram"],["sms","SMS"]])+
+    selectField("lang","Язык", opts.lang, [["ru","Русский"],["kz","Казахский"],["en","Английский"]])+
+    selectField("aud","Тип клиента", opts.aud, [["any","Любой"],["family","Семья с детьми"],["couple","Пара"],["group","Компания"],["senior","Спокойный отдых 50+"]])+
+  '</div><div class="btnrow"><button class="btn" id="genScriptBtn" type="button">Сгенерировать тексты</button></div></div>';
+  html += '<div id="scriptOut"></div>';
+  panel.innerHTML = html;
+
+  function readOpts(){
+    return {
+      tone: document.getElementById("f_tone").value, msgr: document.getElementById("f_msgr").value,
+      lang: document.getElementById("f_lang").value, aud: document.getElementById("f_aud").value
+    };
+  }
+  function renderOut(){
+    var scr = h.scr;
+    if(!scr || !scr.scripts){ document.getElementById("scriptOut").innerHTML=""; return; }
+    var s = scr.scripts;
+    var out = scriptBox("Короткое сообщение", s.short, 450) + scriptBox("Подробное описание", s.detailed) +
+      scriptBox("Честный вариант (с оговорками)", s.honest) + scriptBox("Напоминание через 1-2 дня", s.followup);
+    if(scr.objections && scr.objections.length){
+      out += '<div class="card"><div class="grpTitle">Ответы на возражения</div>'+
+        scr.objections.map(function(o){ return '<div class="claimrow"><div><strong>«'+esc(o.objection)+'»</strong><div style="margin-top:4px;">'+esc(o.response)+'</div></div></div>'; }).join("")+
+      '</div>';
+    }
+    document.getElementById("scriptOut").innerHTML = out;
+    document.getElementById("scriptOut").querySelectorAll("textarea[data-script]").forEach(function(ta){
+      ta.addEventListener("input", function(){
+        var k = ta.dataset.script; h.scr.scripts[k]=ta.value; saveDB();
+        var cnt = ta.parentElement.querySelector(".cnt span");
+        if(cnt) cnt.textContent = ta.value.length;
+      });
+    });
+    document.getElementById("scriptOut").querySelectorAll("[data-copy]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var ta = document.querySelector('textarea[data-script="'+btn.dataset.copy+'"]');
+        copyToClipboard(ta.value, btn);
+      });
+    });
+  }
+  renderOut();
+  document.getElementById("genScriptBtn").addEventListener("click", function(){
+    var opts = readOpts();
+    MISC.script = opts; saveMisc();
+    showProgress("Пишем тексты для клиента…");
+    aiJSON(scriptHotelPrompt(h, opts)).then(function(res){
+      h.scr = {opts: opts, scripts: {short:res.short,detailed:res.detailed,honest:res.honest,followup:res.followup}, objections: res.objections||[]};
+      saveDB(); hideProgress(); renderOut();
+    }).catch(function(err){ showError("Ошибка генерации: "+(err&&err.message||err&&err.code)); hideProgress(); });
+  });
+}
+function selectField(id,label,val,opts){
+  return '<div class="col field"><label>'+esc(label)+'</label><select id="f_'+id+'">'+
+    opts.map(function(o){return '<option value="'+o[0]+'" '+(val===o[0]?"selected":"")+'>'+o[1]+'</option>';}).join("")+
+  '</select></div>';
+}
+function scriptBox(title, val, maxlen){
+  var id = "sb_"+Math.random().toString(36).slice(2,8);
+  var key = title==="Короткое сообщение"?"short":title==="Подробное описание"?"detailed":title==="Честный вариант (с оговорками)"?"honest":"followup";
+  return '<div class="scriptbox"><h4>'+esc(title)+'</h4><textarea data-script="'+key+'">'+esc(val||"")+'</textarea>'+
+    '<div class="cnt"><span><span>'+(val||"").length+'</span>'+(maxlen?(" / "+maxlen+" знаков"):" знаков")+'</span>'+
+    '<button class="btn soft sm" data-copy="'+key+'" type="button">Копировать</button></div></div>';
+}
+
+/* ============ TAB 7: Скрипт под запрос клиента ============ */
+function renderScriptClient(panel){
+  var c = MISC.client;
+  c.f = c.f||{};
+  c.sel = c.sel||[];
+  c.wants = c.wants||[];
+  var hotelsWithData = DB.hotels.filter(function(h){ return Object.keys(h.ext||{}).length>0; });
+
+  var html = '<div class="card">'+
+    '<div class="field"><label>Запрос клиента (как есть)</label><textarea id="cq_query">'+esc(c.f.query||"")+'</textarea></div>'+
+    '<div class="row">'+
+      textField("cq_who","Кто едет", c.f.who)+ textField("cq_dates","Даты/сезон", c.f.dates)+ textField("cq_budget","Бюджет", c.f.budget)+
+    '</div><div class="row">'+
+      textField("cq_city","Город вылета", c.f.city)+ textField("cq_meal","Питание", c.f.meal)+
+      selectField("cq_tone","Тон", c.f.tone||"friendly", [["friendly","Дружелюбный"],["business","Деловой"],["premium","Премиум"],["concise","Лаконичный"]])+
+    '</div><div class="row">'+
+      selectField("cq_msgr","Мессенджер", c.f.msgr||"whatsapp", [["whatsapp","WhatsApp"],["telegram","Telegram"],["instagram","Instagram"],["sms","SMS"]])+
+      selectField("cq_lang","Язык", c.f.lang||"ru", [["ru","Русский"],["kz","Казахский"],["en","Английский"]])+
+    '</div>'+
+    '<div class="grpTitle">Пожелания</div><div class="chipsel">'+WISHES.map(function(w){return '<button class="c'+(c.wants.indexOf(w)>-1?" sel":"")+'" data-want="'+esc(w)+'" type="button">'+esc(w)+'</button>';}).join("")+'</div>'+
+    '<div class="grpTitle">Отели из базы</div><div class="chipsel">'+(hotelsWithData.length?hotelsWithData.map(function(h){return '<button class="c'+(c.sel.indexOf(h.id)>-1?" sel":"")+'" data-hsel="'+h.id+'" type="button">'+esc(h.name)+'</button>';}).join(""):'<span class="muted">Нет отелей с данными. Добавьте отель и проведите анализ.</span>')+'</div>'+
+    '<div class="field" style="margin-top:10px;"><label>Другие отели, которые упомянул клиент (необязательно)</label><input type="text" id="cq_other" value="'+esc(c.f.other||"")+'"></div>'+
+    '<div class="btnrow"><button class="btn" id="genClientBtn" type="button">Подобрать и написать скрипт</button></div>'+
+  '</div><div id="clientOut"></div>';
+  panel.innerHTML = html;
+
+  panel.querySelectorAll("[data-want]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var w = btn.dataset.want; var i = c.wants.indexOf(w);
+      if(i>-1) c.wants.splice(i,1); else c.wants.push(w);
+      saveMisc(); renderScriptClient(panel);
+    });
+  });
+  panel.querySelectorAll("[data-hsel]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var id = btn.dataset.hsel; var i = c.sel.indexOf(id);
+      if(i>-1) c.sel.splice(i,1); else c.sel.push(id);
+      saveMisc(); renderScriptClient(panel);
+    });
+  });
+
+  function renderOut(){
+    var r = c.res;
+    document.getElementById("clientOut").innerHTML = r ? buildClientOut(r) : "";
+    if(r){
+      document.getElementById("clientOut").querySelectorAll("[data-ccopy]").forEach(function(btn){
+        btn.addEventListener("click", function(){ copyToClipboard(btn.dataset.ccopy==="msg"?r.message:r.short_message, btn); });
+      });
+    }
+  }
+  renderOut();
+
+  document.getElementById("genClientBtn").addEventListener("click", function(){
+    c.f = {
+      query: val("cq_query"), who: val("cq_who"), dates: val("cq_dates"), budget: val("cq_budget"),
+      city: val("cq_city"), meal: val("cq_meal"), tone: val("cq_tone"), msgr: val("cq_msgr"), lang: val("cq_lang"),
+      other: val("cq_other")
+    };
+    saveMisc();
+    if(!c.f.query){ showError("Укажите запрос клиента."); return; }
+    var hotelsCompact = c.sel.map(function(id){
+      var h = DB.hotels.find(function(x){return x.id===id;});
+      if(!h) return null;
+      return {name:h.name, place:h.place, rating:h.rsum?null:null, strengths:(h.rsum&&h.rsum.strengths)||[], weaknesses:(h.rsum&&h.rsum.weaknesses)||[],
+        decision: h.ins&&h.ins.recommendation&&h.ins.recommendation.decision, amenities: Object.keys(h.ext||{}).map(function(pid){return (h.ext[pid].amenities||[]).join(",");}).join(" ")};
+    }).filter(Boolean);
+    showProgress("Подбираем отель и пишем скрипт…");
+    aiJSON(scriptClientPrompt(Object.assign({wants:c.wants}, c.f), hotelsCompact)).then(function(res){
+      c.res = res; saveMisc(); hideProgress(); renderOut();
+    }).catch(function(err){ showError("Ошибка: "+(err&&err.message||err&&err.code)); hideProgress(); });
+  });
+
+  function val(id){ var el=document.getElementById(id); return el?el.value:""; }
+}
+function textField(id,label,val){
+  return '<div class="col field"><label>'+esc(label)+'</label><input type="text" id="'+id+'" value="'+esc(val||"")+'"></div>';
+}
+function buildClientOut(r){
+  var out = '<div class="card"><p>'+esc(r.understanding||"")+'</p></div>';
+  if(r.matches && r.matches.length){
+    out += '<div class="card"><div class="grpTitle">Подбор отелей</div>'+
+      r.matches.sort(function(a,b){return b.fit-a.fit;}).map(function(m){
+        return '<div class="claimrow"><span class="badge '+(m.fit>=70?"good":m.fit>=40?"warn":"bad")+'">'+m.fit+'</span><div><strong>'+esc(m.hotel)+'</strong>'+(m.verified===false?' <span class="muted">(не проверено)</span>':'')+
+          '<div class="muted" style="margin-top:3px;">'+esc(m.reason||"")+(m.risk?" · Риск: "+esc(m.risk):"")+'</div></div></div>';
+      }).join("")+
+      (r.best?'<p style="margin-top:8px;"><strong>Лучший вариант:</strong> '+esc(r.best)+'</p>':'')+
+    '</div>';
+  }
+  out += scriptBoxStatic("Основное сообщение", r.message, "msg");
+  out += scriptBoxStatic("Короткая версия", r.short_message, "short");
+  if(r.followup) out += scriptBoxStatic("Напоминание", r.followup, "followup");
+  if(r.objections&&r.objections.length){
+    out += '<div class="card"><div class="grpTitle">Ответы на возражения</div>'+r.objections.map(function(o){return '<div class="claimrow"><div><strong>«'+esc(o.objection)+'»</strong><div style="margin-top:4px;">'+esc(o.response)+'</div></div></div>';}).join("")+'</div>';
+  }
+  out += blockList("Уточняющие вопросы клиенту", r.clarify_questions);
+  out += blockList("Идеи допродаж", r.upsell_ideas);
+  out += blockList("Что честно проговорить", r.honest_notes);
+  return out;
+}
+function scriptBoxStatic(title, text, key){
+  return '<div class="scriptbox"><h4>'+esc(title)+'</h4><div style="font-size:13.5px;">'+nl2br(text||"")+'</div>'+
+    '<div class="cnt"><span>'+(text||"").length+' знаков</span><button class="btn soft sm" data-ccopy="'+key+'" type="button">Копировать</button></div></div>';
+}
+function blockList(title, arr){
+  if(!arr||!arr.length) return "";
+  return '<div class="card"><div class="grpTitle">'+esc(title)+'</div><ul style="margin:0;padding-left:18px;font-size:13.5px;">'+arr.map(function(x){return '<li style="margin-bottom:4px;">'+esc(x)+'</li>';}).join("")+'</ul></div>';
+}
+
+/* ============ TAB 8: Куда поехать ============ */
+function renderDestinations(panel){
+  var d = MISC.dest;
+  d.f = d.f||{};
+  d.interests = d.interests||[];
+  d.avoid = d.avoid||[];
+  var html = '<div class="card">'+
+    '<div class="row">'+
+      textField("d_who","Кто едет", d.f.who)+ textField("d_when","Когда", d.f.when)+ textField("d_nights","Ночей", d.f.nights)+
+    '</div><div class="row">'+
+      textField("d_budget","Бюджет", d.f.budget)+ textField("d_city","Город вылета", d.f.city||"Астана")+
+    '</div>'+
+    '<div class="grpTitle">Интересы</div><div class="chipsel">'+INTERESTS.map(function(w){return '<button class="c'+(d.interests.indexOf(w)>-1?" sel":"")+'" data-int="'+esc(w)+'" type="button">'+esc(w)+'</button>';}).join("")+'</div>'+
+    '<div class="grpTitle">Чего избегать</div><div class="chipsel">'+AVOIDS.map(function(w){return '<button class="c'+(d.avoid.indexOf(w)>-1?" sel":"")+'" data-avoid="'+esc(w)+'" type="button">'+esc(w)+'</button>';}).join("")+'</div>'+
+    '<div class="field" style="margin-top:10px;"><label>Свободные заметки</label><textarea id="d_notes">'+esc(d.f.notes||"")+'</textarea></div>'+
+    '<div class="btnrow"><button class="btn" id="genDestBtn" type="button">Подобрать направления</button></div>'+
+  '</div><div id="destOut"></div>';
+  panel.innerHTML = html;
+
+  panel.querySelectorAll("[data-int]").forEach(function(btn){
+    btn.addEventListener("click", function(){ var w=btn.dataset.int; var i=d.interests.indexOf(w); if(i>-1)d.interests.splice(i,1); else d.interests.push(w); saveMisc(); renderDestinations(panel); });
+  });
+  panel.querySelectorAll("[data-avoid]").forEach(function(btn){
+    btn.addEventListener("click", function(){ var w=btn.dataset.avoid; var i=d.avoid.indexOf(w); if(i>-1)d.avoid.splice(i,1); else d.avoid.push(w); saveMisc(); renderDestinations(panel); });
+  });
+
+  function renderOut(){
+    var r = d.res;
+    document.getElementById("destOut").innerHTML = r? buildDestOut(r) : "";
+    if(r){
+      var btn = document.getElementById("destMsgCopy");
+      if(btn) btn.addEventListener("click", function(){ copyToClipboard(r.client_message||"", btn); });
+    }
+  }
+  renderOut();
+
+  document.getElementById("genDestBtn").addEventListener("click", function(){
+    d.f = {who:val("d_who"),when:val("d_when"),nights:val("d_nights"),budget:val("d_budget"),city:val("d_city"),notes:val("d_notes")};
+    saveMisc();
+    showProgress("Подбираем направления…");
+    aiJSON(destinationsPrompt(Object.assign({interests:d.interests, avoid:d.avoid}, d.f))).then(function(res){
+      d.res = res; saveMisc(); hideProgress(); renderOut();
+    }).catch(function(err){ showError("Ошибка: "+(err&&err.message||err&&err.code)); hideProgress(); });
+  });
+  function val(id){ var el=document.getElementById(id); return el?el.value:""; }
+}
+function buildDestOut(r){
+  var out = '<div class="card"><p>'+esc(r.summary||"")+'</p>'+(r.contradiction?'<p class="muted" style="color:var(--warn);">⚠ '+esc(r.contradiction)+'</p>':'')+'</div>';
+  (r.destinations||[]).sort(function(a,b){return b.comfort-a.comfort;}).forEach(function(dd){
+    out += '<div class="card"><div class="row" style="justify-content:space-between;align-items:flex-start;">'+
+      '<h3 class="disp" style="margin:0;font-size:18px;">'+esc(dd.name)+'</h3><span class="badge good">'+dd.comfort+'</span></div>'+
+      '<p style="font-size:13.5px;">'+esc(dd.reason||"")+'</p>'+
+      '<div class="statgrid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr));">'+
+        stat(dd.season_fit,"Сезон")+stat(dd.flight_time,"Перелёт")+stat(dd.budget_level,"Бюджет")+stat(dd.hotel_type,"Тип отеля")+
+      '</div>'+
+      (dd.areas?'<p class="muted" style="margin-top:8px;">Районы: '+esc(dd.areas)+'</p>':'')+
+      (dd.entry_notes?'<p class="muted">Въезд: '+esc(dd.entry_notes)+' <em>(проверить)</em></p>':'')+
+      (dd.cons&&dd.cons.length?'<p class="muted">Минусы: '+esc(dd.cons.join("; "))+'</p>':'')+
+      (dd.check_before_sale&&dd.check_before_sale.length?'<p class="muted">Проверить перед продажей: '+esc(dd.check_before_sale.join("; "))+'</p>':'')+
+    '</div>';
+  });
+  out += blockList("Лучше не предлагать", r.avoid_recommending);
+  out += blockList("Что уточнить у клиента", r.ask_client);
+  if(r.client_message) out += '<div class="scriptbox"><h4>Сообщение клиенту</h4><div style="font-size:13.5px;">'+nl2br(r.client_message)+'</div><div class="cnt"><span></span><button class="btn soft sm" id="destMsgCopy" type="button">Копировать</button></div></div>';
+  return out;
+}
+function stat(v,l){ return '<div class="stat"><div class="v" style="font-size:14px;">'+esc(v||"—")+'</div><div class="l">'+esc(l)+'</div></div>'; }
+
+/* ---------------- init ---------------- */
+function boot(data){
+  if(data && data.DB) DB = data.DB;
+  if(data && data.MISC) MISC = Object.assign(MISC, data.MISC);
+  if(!data){ loadDB(); }
+  initTheme();
+  if(!DB.active && DB.hotels.length) DB.active = DB.hotels[0].id;
+  renderAll();
+}
+try{
+  if(window.claude && window.claude.hot){
+    window.claude.hot.ready ? window.claude.hot.ready(boot) : boot(window.claude.hot.data);
+  } else boot(null);
+}catch(e){ boot(null); }
+
+})();
+</script>
+</body>
+</html>
